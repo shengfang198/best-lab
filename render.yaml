@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: best-lab-backend
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: node backend/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SUPABASE_URL
+        value: https://cngdnrshocoyyojdebjd.supabase.co
+      - key: SUPABASE_ANON_KEY
+        value: sb_publishable_Zhrs6JehZOUTfkZdPDLzOg_1NT-yYsu

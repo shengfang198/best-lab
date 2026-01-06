@@ -1,0 +1,8 @@
+-- Users
+SELECT * FROM public.users;
+
+-- Roles
+SELECT * FROM public.roles;
+
+-- Sessions
+SELECT * FROM public.sessions;
