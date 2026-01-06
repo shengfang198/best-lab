@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import { supabase } from '../db.js';
 
 class User {
   constructor(data) {
@@ -16,7 +17,6 @@ class User {
   // Find user by email
   static async findByEmail(email) {
     try {
-      const { supabase } = await import('../db.js');
       const { data, error } = await supabase
         .from('users')
         .select('*')
@@ -34,7 +34,6 @@ class User {
   // Find user by username
   static async findByUsername(username) {
     try {
-      const { supabase } = await import('../db.js');
       const { data, error } = await supabase
         .from('users')
         .select('*')
@@ -52,7 +51,6 @@ class User {
   // Find user by ID
   static async findById(userId) {
     try {
-      const { supabase } = await import('../db.js');
       const { data, error } = await supabase
         .from('users')
         .select('*')
@@ -70,9 +68,6 @@ class User {
   // Check if user exists (by email or username)
   static async exists(email, username) {
     try {
-      // Import supabase client directly
-      const { supabase } = await import('../db.js');
-
       // Check email
       const { data: emailData, error: emailError } = await supabase
         .from('users')
@@ -115,7 +110,6 @@ class User {
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-      const { supabase } = await import('../db.js');
       const { data, error } = await supabase
         .from('users')
         .insert({
@@ -142,7 +136,6 @@ class User {
     try {
       const { firstname, lastname, username } = updateData;
 
-      const { supabase } = await import('../db.js');
       const { data, error } = await supabase
         .from('users')
         .update({
@@ -168,7 +161,6 @@ class User {
   // Update last login
   async updateLastLogin() {
     try {
-      const { supabase } = await import('../db.js');
       const { error } = await supabase
         .from('users')
         .update({ updated_at: new Date().toISOString() })

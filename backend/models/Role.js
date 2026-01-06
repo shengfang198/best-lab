@@ -1,4 +1,4 @@
-import { query } from '../db.js';
+import { supabase } from '../db.js';
 
 class Role {
   constructor(data) {
@@ -10,11 +10,14 @@ class Role {
   // Find role by ID
   static async findById(roleId) {
     try {
-      const result = await query(
-        'SELECT role_id, role_name, description FROM roles WHERE role_id = $1',
-        [roleId]
-      );
-      return result.rows.length > 0 ? new Role(result.rows[0]) : null;
+      const { data, error } = await supabase
+        .from('roles')
+        .select('role_id, role_name, description')
+        .eq('role_id', roleId)
+        .limit(1);
+
+      if (error) throw error;
+      return data && data.length > 0 ? new Role(data[0]) : null;
     } catch (error) {
       console.error('Error finding role by ID:', error);
       throw error;
@@ -24,11 +27,14 @@ class Role {
   // Find role by name
   static async findByName(roleName) {
     try {
-      const result = await query(
-        'SELECT role_id, role_name, description FROM roles WHERE role_name = $1',
-        [roleName]
-      );
-      return result.rows.length > 0 ? new Role(result.rows[0]) : null;
+      const { data, error } = await supabase
+        .from('roles')
+        .select('role_id, role_name, description')
+        .eq('role_name', roleName)
+        .limit(1);
+
+      if (error) throw error;
+      return data && data.length > 0 ? new Role(data[0]) : null;
     } catch (error) {
       console.error('Error finding role by name:', error);
       throw error;
@@ -38,8 +44,13 @@ class Role {
   // Get all roles
   static async findAll() {
     try {
-      const result = await query('SELECT role_id, role_name, description FROM roles ORDER BY role_id');
-      return result.rows.map(row => new Role(row));
+      const { data, error } = await supabase
+        .from('roles')
+        .select('role_id, role_name, description')
+        .order('role_id');
+
+      if (error) throw error;
+      return data.map(row => new Role(row));
     } catch (error) {
       console.error('Error finding all roles:', error);
       throw error;
@@ -50,11 +61,17 @@ class Role {
   static async create(roleData) {
     try {
       const { roleName, description } = roleData;
-      const result = await query(
-        'INSERT INTO roles (role_name, description) VALUES ($1, $2) RETURNING role_id, role_name, description',
-        [roleName, description]
-      );
-      return new Role(result.rows[0]);
+      const { data, error } = await supabase
+        .from('roles')
+        .insert({
+          role_name: roleName,
+          description
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return new Role(data);
     } catch (error) {
       console.error('Error creating role:', error);
       throw error;
@@ -65,17 +82,19 @@ class Role {
   async update(updateData) {
     try {
       const { roleName, description } = updateData;
-      const result = await query(
-        'UPDATE roles SET role_name = $1, description = $2 WHERE role_id = $3 RETURNING role_id, role_name, description',
-        [roleName, description, this.roleId]
-      );
+      const { data, error } = await supabase
+        .from('roles')
+        .update({
+          role_name: roleName,
+          description
+        })
+        .eq('role_id', this.roleId)
+        .select()
+        .single();
 
-      if (result.rows.length > 0) {
-        Object.assign(this, result.rows[0]);
-        return this;
-      }
-
-      return null;
+      if (error) throw error;
+      Object.assign(this, data);
+      return this;
     } catch (error) {
       console.error('Error updating role:', error);
       throw error;
@@ -85,8 +104,13 @@ class Role {
   // Delete role
   async delete() {
     try {
-      const result = await query('DELETE FROM roles WHERE role_id = $1', [this.roleId]);
-      return result.rowCount > 0;
+      const { error } = await supabase
+        .from('roles')
+        .delete()
+        .eq('role_id', this.roleId);
+
+      if (error) throw error;
+      return true;
     } catch (error) {
       console.error('Error deleting role:', error);
       throw error;
